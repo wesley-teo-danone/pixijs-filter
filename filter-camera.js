@@ -3,6 +3,7 @@ import {
   html,
   css
 } from 'https://unpkg.com/lit@2.7.5/index.js?module';
+import './pixi-overlay.js';
 
 class FilterCamera extends LitElement {
   static styles = css`
@@ -77,16 +78,6 @@ class FilterCamera extends LitElement {
     audio: false
   };
 
-  constraintsFront = {
-    video: {
-      width: { ideal: 9999 }, // maximum width and height to push camera to highest resolution
-      height: { ideal: 9999 },
-      aspectRatio: { ideal: 16 / 9 },
-      frameRate: { ideal: 60, min: 30 }
-    },
-    audio: false
-  };
-
   connectedCallback() {
     super.connectedCallback();
   }
@@ -144,13 +135,16 @@ class FilterCamera extends LitElement {
 
   render() {
     return html`
-      ${!this.videoReady ? html`<spinner-loader></spinner-loader>` : null}
-      <div id="camera-container">
-        <video id="camera" autoplay playsinline muted></video>
-        ${this.videoReady
-          ? html` <camera-overlay .videoEl=${this.videoEl}></camera-overlay>`
-          : null}
-      </div>
+      <!-- ${!this.videoReady ? html`<spinner-loader></spinner-loader>` : null}
+      <div id="camera-container"> -->
+      <video id="camera" autoplay playsinline muted></video>
+      <pixi-overlay
+        @pixi-ready=${(e) => console.log('ready', e.detail)}
+      ></pixi-overlay>
+      <!-- ${this.videoReady
+        ? html` <camera-overlay .videoEl=${this.videoEl}></camera-overlay>`
+        : null} -->
+      <!-- </div> -->
     `;
   }
 }
