@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>PixiJS Filter Demo</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- PixiJS and PixiUI dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.13.0/dist/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pixi/ui@2/dist/pixi-ui.js"></script>
+    <!-- Include this script -->
+    <script type="module" src="./filter-camera.js"></script>
+    <!-- Until here -->
+</head>
+
+<body class="m-0 p-0">
+    <div style="height: 100vh;">
+        <filter-camera></filter-camera>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const camera = document.querySelector("filter-camera");
+            try {
+                await camera.startCamera();
+            } catch (error) {
+                alert(error);
+            }
+        });
+    </script>
+</body>
+
+</html>
