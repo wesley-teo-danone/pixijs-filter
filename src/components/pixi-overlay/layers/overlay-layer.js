@@ -1,24 +1,18 @@
 import { Container, Graphics } from 'pixi.js';
-
+import { FaceOverlays } from '../overlays/face-overlays';
 export class OverlayLayer {
   constructor() {
     this.container = new Container({ label: 'overlay-layer' });
-
-    // // ---- draw something ----
-    // const g = new Graphics();
-
-    // // green rectangle outline + filled circle to prove it works
-    // g.rect(30, 30, 180, 110);
-    // g.fill({ color: 0x00ffee, alpha: 0.25 });
-    // g.stroke({ width: 4, color: 0x00ffee, alpha: 1 });
-
-    // g.circle(280, 85, 35);
-    // g.fill({ color: 0xff00ee, alpha: 0.35 });
-    // g.stroke({ width: 4, color: 0xff00ee, alpha: 1 });
-
-    // this.container.addChild(g);
+    this.faceOverlay = new FaceOverlays();
+    this.container.addChild(this.faceOverlay.container);
   }
-
+  update(landmarks, options = {}) {
+    // Delegate update to all overlays (for now, just faceOverlay)
+    if (this.faceOverlay && typeof this.faceOverlay.update === 'function') {
+      this.faceOverlay.update(landmarks, options);
+    }
+    // In the future, call update on other overlays here
+  }
   clear() {
     this.container.removeChildren();
   }
