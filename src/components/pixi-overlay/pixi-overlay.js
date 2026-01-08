@@ -3,6 +3,8 @@ import {
   html,
   css
 } from 'https://unpkg.com/lit@2.7.5/index.js?module';
+import { OverlayLayer } from './layers/overlay-layer.js';
+import { UiLayer } from './layers/ui-layer.js';
 
 export class PixiOverlay extends LitElement {
   static styles = css`
@@ -35,39 +37,22 @@ export class PixiOverlay extends LitElement {
   async firstUpdated() {
     const mount = this.renderRoot.querySelector('#mount');
 
-    // Create Pixi application and auto-resize to the mount element
-    this.app = new PIXI.Application({
-      backgroundAlpha: 0, // transparent
-      antialias: true,
-      resizeTo: mount // <-- key: keeps renderer size = mount box
-    });
-    // IMPORTANT: init is async in v8
+    this.app = new PIXI.Application();
     await this.app.init({
       backgroundAlpha: 0,
-      resizeTo: mount, // your overlay div
+      resizeTo: window, // your overlay div
       antialias: true
     });
 
-    // v8 uses app.canvas (not app.view)
     mount.appendChild(this.app.canvas);
 
-    // Example layer container
-    this.overlayLayer = new PIXI.Container();
-    this.app.stage.addChild(this.overlayLayer);
-
-    // ---- draw something ----
-    const g = new PIXI.Graphics();
-
-    // green rectangle outline + filled circle to prove it works
-    g.rect(30, 30, 180, 110);
-    g.fill({ color: 0x00ff00, alpha: 0.25 });
-    g.stroke({ width: 4, color: 0x00ff00, alpha: 1 });
-
-    g.circle(280, 85, 35);
-    g.fill({ color: 0xff00ff, alpha: 0.35 });
-    g.stroke({ width: 4, color: 0xff00ff, alpha: 1 });
-
-    this.overlayLayer.addChild(g);
+    //We should split these layers into graphics layer and ui
+    this.overlayLayer = new OverlayLayer();
+    this.UiLayer = new UiLayer();
+    this.app.stage.addChild(
+      this.overlayLayer.container,
+      this.UiLayer.container
+    );
 
     // Optional: dispatch event so parent knows Pixi is ready
     this.dispatchEvent(
@@ -83,7 +68,7 @@ export class PixiOverlay extends LitElement {
     super.disconnectedCallback();
 
     if (this.app) {
-      this.app.destroy({ removeView: true });
+      this.app.destroy();
       this.app = null;
       this.overlayLayer = null;
     }

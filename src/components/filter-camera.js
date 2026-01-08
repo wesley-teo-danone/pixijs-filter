@@ -3,7 +3,7 @@ import {
   html,
   css
 } from 'https://unpkg.com/lit@2.7.5/index.js?module';
-import './pixi-overlay.js';
+import './pixi-overlay/pixi-overlay.js';
 
 class FilterCamera extends LitElement {
   static styles = css`
@@ -37,18 +37,12 @@ class FilterCamera extends LitElement {
     video.flip {
       transform: rotateX(180deg);
     }
-    camera-overlay {
+    pixi-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-    }
-    spinner-loader {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
     }
   `;
 
@@ -135,16 +129,10 @@ class FilterCamera extends LitElement {
 
   render() {
     return html`
-      <!-- ${!this.videoReady ? html`<spinner-loader></spinner-loader>` : null}
-      <div id="camera-container"> -->
       <video id="camera" autoplay playsinline muted></video>
       <pixi-overlay
         @pixi-ready=${(e) => console.log('ready', e.detail)}
       ></pixi-overlay>
-      <!-- ${this.videoReady
-        ? html` <camera-overlay .videoEl=${this.videoEl}></camera-overlay>`
-        : null} -->
-      <!-- </div> -->
     `;
   }
 }

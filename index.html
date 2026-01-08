@@ -10,14 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.13.0/dist/pixi.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@pixi/ui@2/dist/pixi-ui.js"></script>
     <!-- Include this script -->
-    <script type="module" src="./filter-camera.js"></script>
+    <script type="module" src="./src/components/filter-camera.js"></script>
     <!-- Until here -->
 </head>
 
 <body class="m-0 p-0">
-    <div style="height: 100vh;">
-        <filter-camera></filter-camera>
-    </div>
+    <filter-camera></filter-camera>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
             const camera = document.querySelector("filter-camera");
