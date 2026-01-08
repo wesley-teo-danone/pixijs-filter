@@ -1,8 +1,4 @@
-import {
-  LitElement,
-  html,
-  css
-} from 'https://unpkg.com/lit@2.7.5/index.js?module';
+import { LitElement, html, css } from 'lit';
 import './pixi-overlay/pixi-overlay.js';
 
 class FilterCamera extends LitElement {
@@ -91,12 +87,6 @@ class FilterCamera extends LitElement {
    * 4. Sets the video element's source to the acquired camera stream.
    * 5. Displays the video feed and marks the component as ready once the metadata is loaded.
    *
-   * @async
-   * @throws {IronAIError} ERR_CAM_001 - Thrown if camera permissions are denied.
-   * @throws {IronAIError} ERR_CAM_002 - Thrown if the face detection model fails to load.
-   * @throws {IronAIError} ERR_CAM_003 - Thrown if the hand landmarker model fails to load.
-   * @throws {IronAIError} ERR_CAM_004 - Thrown if the reference strip detector model fails to load.
-   *
    * @returns {Promise<void>} Resolves when the camera is successfully initialized and ready for use.
    */
   async startCamera() {
@@ -130,9 +120,11 @@ class FilterCamera extends LitElement {
   render() {
     return html`
       <video id="camera" autoplay playsinline muted></video>
-      <pixi-overlay
-        @pixi-ready=${(e) => console.log('ready', e.detail)}
-      ></pixi-overlay>
+      ${this.videoReady
+        ? html`<pixi-overlay
+            @pixi-ready=${(e) => console.log('ready', e.detail)}
+          ></pixi-overlay>`
+        : ''}
     `;
   }
 }

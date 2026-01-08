@@ -1,10 +1,9 @@
-import {
-  LitElement,
-  html,
-  css
-} from 'https://unpkg.com/lit@2.7.5/index.js?module';
+import { LitElement, html, css } from 'lit';
+import { Application, Graphics, Assets, Container, Sprite } from 'pixi.js';
+import { Button } from '@pixi/ui';
 import { OverlayLayer } from './layers/overlay-layer.js';
 import { UiLayer } from './layers/ui-layer.js';
+import { FilterBar } from './ui/filter-bar.js';
 
 export class PixiOverlay extends LitElement {
   static styles = css`
@@ -12,7 +11,6 @@ export class PixiOverlay extends LitElement {
       position: absolute;
       inset: 0; /* fill parent */
       display: block;
-      pointer-events: none; /* overlay doesn’t block clicks by default */
     }
 
     #mount {
@@ -28,32 +26,30 @@ export class PixiOverlay extends LitElement {
     }
   `;
 
-  /** @type {PIXI.Application | null} */
-  app = null;
-
-  /** Optional: expose a layer you can add stuff to */
-  overlayLayer = null;
-
   async firstUpdated() {
     const mount = this.renderRoot.querySelector('#mount');
 
-    this.app = new PIXI.Application();
+    this.app = new Application();
     await this.app.init({
       backgroundAlpha: 0,
       resizeTo: window, // your overlay div
       antialias: true
     });
+    // For Chrome devtools debugging
+    globalThis.__PIXI_APP__ = this.app;
 
     mount.appendChild(this.app.canvas);
 
     //We should split these layers into graphics layer and ui
     this.overlayLayer = new OverlayLayer();
-    this.UiLayer = new UiLayer();
+    this.uiLayer = new UiLayer();
+    this.filterBar = new FilterBar();
+
     this.app.stage.addChild(
       this.overlayLayer.container,
-      this.UiLayer.container
+      this.uiLayer.container,
+      this.filterBar.container
     );
-
     // Optional: dispatch event so parent knows Pixi is ready
     this.dispatchEvent(
       new CustomEvent('pixi-ready', {

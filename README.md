@@ -7,3 +7,8 @@ pixi-overlay.ts: owns Pixi app lifecycle (init/mount/destroy), creates the stage
 face-overlay.ts: a “scene graph module” — builds a container subtree and has update(faceResult) to redraw. (Not LIT Component)
 
 filter-bar.ts: creates pixi-ui buttons inside uiLayer, emits filter-change upward. (Not LIT Component)
+
+Layers never import features.
+Features may be added to layers.
+
+OverlayLayer should never import FilterBar

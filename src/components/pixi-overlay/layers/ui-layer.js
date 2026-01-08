@@ -1,6 +1,8 @@
+import { Container, Graphics } from 'pixi.js';
+
 export class UiLayer {
   constructor() {
-    this.container = new PIXI.Container({ label: 'ui-layer' });
+    this.container = new Container({ label: 'ui-layer' });
   }
 
   clear() {

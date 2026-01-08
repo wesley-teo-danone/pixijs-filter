@@ -1,9 +1,11 @@
+import { Container, Graphics } from 'pixi.js';
+
 export class OverlayLayer {
   constructor() {
-    this.container = new PIXI.Container({ label: 'overlay-layer' });
+    this.container = new Container({ label: 'overlay-layer' });
 
     // ---- draw something ----
-    const g = new PIXI.Graphics();
+    const g = new Graphics();
 
     // green rectangle outline + filled circle to prove it works
     g.rect(30, 30, 180, 110);
