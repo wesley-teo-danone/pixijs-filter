@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import './pixi-overlay/pixi-overlay.js';
+import { detectionModels } from '../logic/models/detection-models.js';
 
 class FilterCamera extends LitElement {
   static styles = css`
@@ -92,6 +93,8 @@ class FilterCamera extends LitElement {
   async startCamera() {
     this.visible = true;
     try {
+      await detectionModels.loadModels();
+
       this.stream = await navigator.mediaDevices.getUserMedia(
         this.constraintsBack
       );
@@ -122,6 +125,7 @@ class FilterCamera extends LitElement {
       <video id="camera" autoplay playsinline muted></video>
       ${this.videoReady
         ? html`<pixi-overlay
+            .videoEl=${this.videoEl}
             @pixi-ready=${(e) => console.log('ready', e.detail)}
           ></pixi-overlay>`
         : ''}
