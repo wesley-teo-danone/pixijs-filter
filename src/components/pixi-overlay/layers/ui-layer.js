@@ -1,8 +1,11 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { DetectorBar } from '../ui/detector-bar.js';
 
 export class UiLayer {
   constructor() {
     this.container = new Container({ label: 'ui-layer' });
+    this.detectorBar = new DetectorBar();
+    this.container.addChild(this.detectorBar.container);
   }
 
   clear() {

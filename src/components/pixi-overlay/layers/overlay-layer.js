@@ -2,16 +2,21 @@ import { Container } from 'pixi.js';
 import { FaceOverlays } from '../overlays/face-overlays';
 import { FaceSecondOverlay } from '../overlays/face-second-overlay';
 import { FaceHybridOverlay } from '../overlays/face-hybrid-overlay';
+import {
+  detectorStore,
+  DETECTORS
+} from '../../../logic/state/detector-store.js';
 
 export class OverlayLayer {
-  constructor({ initialFilter = 'primary' } = {}) {
+  constructor() {
     this.container = new Container({ label: 'overlay-layer' });
+    const snapshot = detectorStore.getSnapshot();
 
-    // Default overlays
+    // Default overlays keyed by detector id
     this.overlays = {
-      primary: new FaceOverlays(),
-      secondary: new FaceSecondOverlay(),
-      hybrid: new FaceHybridOverlay()
+      tongue: new FaceOverlays(),
+      nail: new FaceSecondOverlay(),
+      eye: new FaceHybridOverlay()
     };
 
     // Add all overlays to the container, hide them initially
@@ -20,21 +25,26 @@ export class OverlayLayer {
       this.container.addChild(overlay.container);
     });
 
-    // Set the initial active overlay
-    const overlayIds = Object.keys(this.overlays);
-    this.activeOverlayId = overlayIds.includes(initialFilter)
-      ? initialFilter
-      : overlayIds[0];
+    // Set and show the initial active overlay based on store snapshot
+    this.activeOverlayId = snapshot.currentDetector?.id;
     this.#setVisibility(this.activeOverlayId);
+
+    this._unsubscribeStore = detectorStore.subscribe((state) => {
+      this.#syncWithStore(state.currentDetector?.id ?? null);
+    });
   }
 
-  // Exposed method to change the active overlay
-  setFilter(filterId) {
-    if (!this.overlays[filterId] || this.activeOverlayId === filterId)
-      return false;
-    this.activeOverlayId = filterId;
-    this.#setVisibility(filterId);
-    return true;
+  destroy() {
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = null;
+    this.container.destroy({ children: true });
+  }
+
+  #syncWithStore(detectorId) {
+    if (!detectorId || !this.overlays[detectorId]) return;
+    if (this.activeOverlayId === detectorId) return;
+    this.activeOverlayId = detectorId;
+    this.#setVisibility(detectorId);
   }
 
   // Private method to set visibility of overlays
@@ -47,7 +57,7 @@ export class OverlayLayer {
   // Update method to forward landmark data to the active overlay
   update(landmarkSets, options = {}) {
     const overlay = this.overlays[this.activeOverlayId];
-    overlay?.update?.(landmarkSets, options);
+    overlay.update(landmarkSets, options);
   }
 
   clear() {

@@ -13,6 +13,7 @@ export class DetectionController {
     if (!videoEl || videoEl.readyState < 2) return; // wait for current frame
     if (nowMs - this._lastDetect < this.detectEveryMs) return;
     this._lastDetect = nowMs;
+    console.log('hands', hands, 'face', face);
     const faceResult = face
       ? this.faceLandmarkerModel.detectForVideo(videoEl, nowMs)
       : null;

@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import './pixi-overlay/pixi-overlay.js';
 import { detectionModels } from '../logic/models/detection-models.js';
+import { detectorStore } from '../logic/state/detector-store.js';
 
 class FilterCamera extends LitElement {
   static styles = css`
@@ -94,7 +95,7 @@ class FilterCamera extends LitElement {
     this.visible = true;
     try {
       await detectionModels.loadModels();
-
+      detectorStore.init();
       this.stream = await navigator.mediaDevices.getUserMedia(
         this.constraintsBack
       );

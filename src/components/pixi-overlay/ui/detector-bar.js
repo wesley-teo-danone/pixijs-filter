@@ -1,19 +1,19 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { ButtonContainer } from '@pixi/ui';
+import { detectorStore } from '../../../logic/state/detector-store.js';
 
-export class FilterBar {
-  constructor({ filters, onSelect } = {}) {
-    this.container = new Container({ label: 'filter-bar' });
+export class DetectorBar {
+  constructor() {
+    this.container = new Container({ label: 'detector-bar' });
     this.container.position.set(24, 24);
 
-    this.onSelect = onSelect;
     this.buttons = new Map();
 
     const buttonWidth = 120;
     const buttonHeight = 48;
     const gap = 12;
-
-    filters.forEach((filter, index) => {
+    const detectorList = Array.from(detectorStore.detectors.values());
+    detectorList.forEach((detector, index) => {
       const graphic = new Graphics();
       graphic.roundRect(0, 0, buttonWidth, buttonHeight, 12);
       graphic.fill({ color: 0x252525, alpha: 0.75 });
@@ -24,7 +24,7 @@ export class FilterBar {
       button.eventMode = 'static';
 
       const label = new Text({
-        text: filter.label,
+        text: detector.label,
         style: {
           fill: 0xffffff,
           fontSize: 16,
@@ -35,31 +35,31 @@ export class FilterBar {
       label.position.set(buttonWidth / 2, buttonHeight / 2);
       button.addChild(label);
 
-      // Handle button press
       button.onPress.connect(() => {
-        this.setActive(filter.id);
-        this.onSelect?.(filter.id);
+        this.setActive(detector.id);
+        detectorStore.setCurrent(detector.id);
       });
 
       this.container.addChild(button);
-      this.buttons.set(filter.id, { button, label });
+      this.buttons.set(detector.id, { button, label });
     });
 
-    const first = filters[0];
-    if (first) {
-      this.setActive(first.id);
+    const firstDetector = detectorList[0];
+    if (firstDetector) {
+      this.setActive(firstDetector.id);
     }
   }
 
-  setActive(filterId) {
-    if (this.activeFilter === filterId || !this.buttons.has(filterId)) return;
-    this.activeFilter = filterId;
+  setActive(detectorId) {
+    if (this.activeDetector === detectorId || !this.buttons.has(detectorId)) {
+      return;
+    }
+    this.activeDetector = detectorId;
     this.buttons.forEach(({ button }, id) => {
-      button.alpha = id === filterId ? 1 : 0.55;
+      button.alpha = id === detectorId ? 1 : 0.55;
     });
   }
 
-  /** Optional helpers */
   show() {
     this.container.visible = true;
   }

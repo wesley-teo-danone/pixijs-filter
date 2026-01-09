@@ -2,19 +2,9 @@ import { LitElement, html, css } from 'lit';
 import { Application, Graphics, Assets, Container, Sprite } from 'pixi.js';
 import { OverlayLayer } from './layers/overlay-layer.js';
 import { UiLayer } from './layers/ui-layer.js';
-import { FilterBar } from './ui/filter-bar.js';
 import { DetectionController } from '../../components/controller/detection-controller.js';
 import { addFiltersBundle } from '../../assets/assets.js';
-
-const FILTERS = [
-  { id: 'primary', label: 'Classic', requires: { face: true } },
-  { id: 'secondary', label: 'Hands', requires: { hands: true } },
-  { id: 'hybrid', label: 'Hybrid', requires: { face: true, hands: true } }
-];
-
-const FILTER_LOOKUP = new Map(
-  FILTERS.map((filter) => [filter.id, filter, filter.requires])
-);
+import { detectorStore } from '../../logic/state/detector-store.js';
 
 export class PixiOverlay extends LitElement {
   static properties = {
@@ -37,8 +27,27 @@ export class PixiOverlay extends LitElement {
   constructor() {
     super();
     this.mirrored = false;
-    this.currentFilterId = FILTERS[0].id;
-    this.currentFilterMeta = FILTER_LOOKUP.get(this.currentFilterId);
+    const { currentDetector, detectorStates } = detectorStore.getSnapshot();
+    console.log('Initial detector store snapshot:', {
+      currentDetector,
+      detectorStates
+    });
+    // metaData of current detector
+    this.currentDetectorMeta = currentDetector;
+    // id of current detector
+    this.currentDetectorId = currentDetector.id;
+    // all detector states
+    this.detectorStates = detectorStates;
+
+    this._unsubscribeStore = detectorStore.subscribe((state) => {
+      this.detectorStates = state.detectorStates;
+      const nextId = state.currentDetector?.id ?? null;
+      if (nextId !== this.currentDetectorId) {
+        this.currentDetectorId = nextId;
+        this.currentDetectorMeta = state.currentDetector ?? null;
+        console.log('Detector changed to:', this.currentDetectorId);
+      }
+    });
   }
 
   async firstUpdated() {
@@ -58,20 +67,13 @@ export class PixiOverlay extends LitElement {
 
     mount.appendChild(this.app.canvas);
 
-    this.overlayLayer = new OverlayLayer({
-      initialFilter: this.currentFilterId
-    });
+    this.overlayLayer = new OverlayLayer();
     this.uiLayer = new UiLayer();
-    this.filterBar = new FilterBar({
-      filters: FILTERS,
-      onSelect: (filterId) => this.#handleFilterChange(filterId)
-    });
 
     this.app.stage.addChild(
       this.overlayLayer.container,
       this.uiLayer.container
     );
-    this.uiLayer.container.addChild(this.filterBar.container);
 
     // create controller once you have the landmarker
     this.tracker = new DetectionController({
@@ -81,7 +83,10 @@ export class PixiOverlay extends LitElement {
     // --- PIXI Ticker for detection ---
     this.app.ticker.add(() => {
       if (!this.videoEl) return;
-      const requirements = this.currentFilterMeta.requires;
+      const requirements = this.currentDetectorMeta?.requires ?? {
+        face: true,
+        hands: true
+      };
       const detection =
         this.tracker.detect(this.videoEl, performance.now(), requirements) ??
         this.tracker.getLatest();
@@ -111,6 +116,14 @@ export class PixiOverlay extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
 
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = null;
+
+    if (this.tracker) {
+      this.tracker.destroy?.();
+      this.tracker = null;
+    }
+
     if (this.app) {
       this.app.destroy();
       this.app = null;
@@ -126,14 +139,6 @@ export class PixiOverlay extends LitElement {
 
   render() {
     return html`<div id="mount"></div>`;
-  }
-
-  #handleFilterChange(filterId) {
-    if (this.overlayLayer?.setFilter(filterId)) {
-      this.currentFilterId = filterId;
-      this.currentFilterMeta = FILTER_LOOKUP.get(filterId);
-      this.filterBar?.setActive(filterId);
-    }
   }
 }
 
