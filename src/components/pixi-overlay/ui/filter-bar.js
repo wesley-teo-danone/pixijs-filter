@@ -1,49 +1,62 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 import { ButtonContainer } from '@pixi/ui';
 
 export class FilterBar {
-  constructor() {
-    // Root container for this UI module
+  constructor({ filters, onSelect } = {}) {
     this.container = new Container({ label: 'filter-bar' });
-    console.log(this.container);
+    this.container.position.set(24, 24);
 
-    // Create a Graphics object
-    const g = new Graphics();
-    g.rect(130, 130, 180, 110);
-    g.fill({ color: 0xfc2c03, alpha: 0.25 });
-    g.stroke({ width: 4, color: 0xfc2c03, alpha: 1 });
+    this.onSelect = onSelect;
+    this.buttons = new Map();
 
-    const button = new ButtonContainer(g);
+    const buttonWidth = 120;
+    const buttonHeight = 48;
+    const gap = 12;
 
-    button.onPress.connect(() => {
-      console.log(`Filter button clicked`);
+    filters.forEach((filter, index) => {
+      const graphic = new Graphics();
+      graphic.roundRect(0, 0, buttonWidth, buttonHeight, 12);
+      graphic.fill({ color: 0x252525, alpha: 0.75 });
+      graphic.stroke({ width: 2, color: 0xffffff, alpha: 0.2 });
+
+      const button = new ButtonContainer(graphic);
+      button.position.set(index * (buttonWidth + gap), 0);
+      button.eventMode = 'static';
+
+      const label = new Text({
+        text: filter.label,
+        style: {
+          fill: 0xffffff,
+          fontSize: 16,
+          fontFamily: 'Arial'
+        }
+      });
+      label.anchor.set(0.5);
+      label.position.set(buttonWidth / 2, buttonHeight / 2);
+      button.addChild(label);
+
+      // Handle button press
+      button.onPress.connect(() => {
+        this.setActive(filter.id);
+        this.onSelect?.(filter.id);
+      });
+
+      this.container.addChild(button);
+      this.buttons.set(filter.id, { button, label });
     });
-    this.container.addChild(button);
 
-    // this._buttons = [];
+    const first = filters[0];
+    if (first) {
+      this.setActive(first.id);
+    }
+  }
 
-    // const buttonWidth = 80;
-    // const buttonHeight = 40;
-    // const gap = 10;
-
-    // for (let i = 0; i < 4; i++) {
-    //   const button = new PIXI.UI.Button({
-    //     width: buttonWidth,
-    //     height: buttonHeight,
-    //     text: `F${i + 1}`
-    //   });
-
-    //   // Position buttons horizontally at the top
-    //   button.position.set(padding + i * (buttonWidth + gap), padding);
-
-    //   // Click handler
-    //   button.onPress.connect(() => {
-    //     console.log(`Filter button ${i + 1} clicked`);
-    //   });
-
-    //   this.container.addChild(button);
-    //   this._buttons.push(button);
-    // }
+  setActive(filterId) {
+    if (this.activeFilter === filterId || !this.buttons.has(filterId)) return;
+    this.activeFilter = filterId;
+    this.buttons.forEach(({ button }, id) => {
+      button.alpha = id === filterId ? 1 : 0.55;
+    });
   }
 
   /** Optional helpers */

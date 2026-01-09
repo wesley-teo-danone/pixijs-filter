@@ -3,9 +3,7 @@ export class FaceOverlays {
   constructor() {
     // Root container for this UI module
     this.container = new Container({ label: 'face-overlays' });
-    console.log(this.container);
     this.sticker = Sprite.from(Assets.get('sticker'));
-    console.log(this.sticker);
 
     this.sticker.anchor.set(0.5, 0.5);
     this.sticker.scale.set(0.05);
@@ -13,7 +11,11 @@ export class FaceOverlays {
     this.container.addChild(this.sticker);
   }
 
-  update(landmarks, { mirrored = false, index = 1, width, height } = {}) {
+  update(
+    landmarkSets,
+    { mirrored = false, index = 1, width = 0, height = 0 } = {}
+  ) {
+    const landmarks = landmarkSets?.face ?? landmarkSets?.faces?.[0];
     if (!landmarks || !landmarks[index]) {
       this.sticker.visible = false;
       return;

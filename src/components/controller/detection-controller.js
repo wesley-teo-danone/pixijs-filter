@@ -9,14 +9,25 @@ export class DetectionController {
     this._latest = null;
   }
 
-  detect(videoEl, nowMs) {
+  detect(videoEl, nowMs, { face = false, hands = false } = {}) {
     if (!videoEl || videoEl.readyState < 2) return; // wait for current frame
     if (nowMs - this._lastDetect < this.detectEveryMs) return;
-
     this._lastDetect = nowMs;
-
-    const result = this.faceLandmarkerModel.detectForVideo(videoEl, nowMs);
-    this._latest = result?.faceLandmarks?.[0] ?? null;
+    const faceResult = face
+      ? this.faceLandmarkerModel.detectForVideo(videoEl, nowMs)
+      : null;
+    const handResult = hands
+      ? this.handLandmarkerModel.detectForVideo(videoEl, nowMs)
+      : null;
+    this._latest = {
+      face: faceResult?.faceLandmarks?.[0] ?? null,
+      faces: faceResult?.faceLandmarks ?? [],
+      faceBlendShapes: faceResult?.faceBlendShapes ?? [],
+      hands: handResult?.landmarks ?? [],
+      handedness: handResult?.handedness ?? [],
+      timestamp: nowMs
+    };
+    return this._latest;
   }
 
   getLatest() {
