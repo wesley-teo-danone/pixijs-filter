@@ -15,7 +15,7 @@ export class FaceOverlays {
     landmarkSets,
     { mirrored = false, index = 1, width = 0, height = 0 } = {}
   ) {
-    const landmarks = landmarkSets?.face ?? landmarkSets?.faces?.[0];
+    const landmarks = landmarkSets?.faceLandmarks;
     if (!landmarks || !landmarks[index]) {
       this.sticker.visible = false;
       return;

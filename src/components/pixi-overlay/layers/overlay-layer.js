@@ -1,11 +1,8 @@
 import { Container } from 'pixi.js';
 import { FaceOverlays } from '../overlays/face-overlays';
-import { FaceSecondOverlay } from '../overlays/face-second-overlay';
+import { HandOverlay } from '../overlays/hand-overlay.js';
 import { FaceHybridOverlay } from '../overlays/face-hybrid-overlay';
-import {
-  detectorStore,
-  DETECTORS
-} from '../../../logic/state/detector-store.js';
+import { detectorStore } from '../../../logic/state/detector-store.js';
 
 export class OverlayLayer {
   constructor() {
@@ -15,7 +12,7 @@ export class OverlayLayer {
     // Default overlays keyed by detector id
     this.overlays = {
       tongue: new FaceOverlays(),
-      nail: new FaceSecondOverlay(),
+      nail: new HandOverlay(),
       eye: new FaceHybridOverlay()
     };
 

@@ -6,18 +6,15 @@ const DETECTOR_STATES = {
 const DETECTORS = [
   {
     id: 'tongue',
-    label: 'Tongue',
-    requires: { face: true }
+    label: 'Tongue'
   },
   {
     id: 'nail',
-    label: 'Nails',
-    requires: { hands: true }
+    label: 'Nails'
   },
   {
     id: 'eye',
-    label: 'Lower Eyelid',
-    requires: { face: true, hands: true }
+    label: 'Lower Eyelid'
   }
 ];
 

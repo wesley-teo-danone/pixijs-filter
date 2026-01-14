@@ -3,7 +3,7 @@ import { Container, Sprite, Assets } from 'pixi.js';
 /**
  * Overlay that attaches a sticker to each detected hand (wrist landmark).
  */
-export class FaceSecondOverlay {
+export class HandOverlay {
   constructor() {
     this.container = new Container({ label: 'hand-overlays' });
 
@@ -19,7 +19,8 @@ export class FaceSecondOverlay {
   }
 
   update(landmarkSets, { mirrored = false, width = 0, height = 0 } = {}) {
-    const hands = landmarkSets?.hands ?? [];
+    const handData = landmarkSets?.handLandmarks ?? landmarkSets ?? null;
+    const hands = handData?.landmarks ?? [];
     this.handSprites.forEach((sprite, idx) => {
       const hand = hands[idx];
       const wrist = hand?.[0];

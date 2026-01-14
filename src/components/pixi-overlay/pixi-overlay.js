@@ -77,21 +77,16 @@ export class PixiOverlay extends LitElement {
 
     // create controller once you have the landmarker
     this.tracker = new DetectionController({
+      videoEl: this.videoEl,
       detectEveryMs: 33
     });
 
     // --- PIXI Ticker for detection ---
     this.app.ticker.add(() => {
       if (!this.videoEl) return;
-      const requirements = this.currentDetectorMeta?.requires ?? {
-        face: true,
-        hands: true
-      };
       const detection =
-        this.tracker.detect(this.videoEl, performance.now(), requirements) ??
-        this.tracker.getLatest();
+        this.tracker.detect(performance.now()) ?? this.tracker.getLatest();
       if (!detection) return;
-
       const w = this.app.renderer.width;
       const h = this.app.renderer.height;
 
