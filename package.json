@@ -2,11 +2,9 @@
   "name": "pixijs-filter",
   "version": "1.0.0",
   "scripts": {
-    "start": "live-server --quiet --open=./index.html",
-    "start-https": "live-server --https=./https-config.js --quiet --open=./index.html",
     "lint": "eslint \"**/*.{js,ts}\"",
     "lint:fix": "eslint \"**/*.{js,ts}\" --fix",
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview"
   },
