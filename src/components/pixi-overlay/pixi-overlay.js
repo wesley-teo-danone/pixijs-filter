@@ -9,7 +9,7 @@ import { detectorStore } from '../../logic/state/detector-store.js';
 export class PixiOverlay extends LitElement {
   static properties = {
     videoEl: { type: HTMLElement },
-    mirrored: { type: Boolean }
+    mirrored: { type: Boolean },
   };
   static styles = css`
     :host {
@@ -30,7 +30,7 @@ export class PixiOverlay extends LitElement {
     const { currentDetector, detectorStates } = detectorStore.getSnapshot();
     console.log('Initial detector store snapshot:', {
       currentDetector,
-      detectorStates
+      detectorStates,
     });
     // metaData of current detector
     this.currentDetectorMeta = currentDetector;
@@ -58,8 +58,10 @@ export class PixiOverlay extends LitElement {
     await this.app.init({
       backgroundAlpha: 0,
       resizeTo: mount, // your overlay div
-      antialias: true
+      antialias: true,
     });
+    detectorStore.width = this.app.renderer.width;
+    detectorStore.height = this.app.renderer.height;
     // For Chrome devtools debugging
     globalThis.__PIXI_APP__ = this.app;
     // Load assets
@@ -72,13 +74,13 @@ export class PixiOverlay extends LitElement {
 
     this.app.stage.addChild(
       this.overlayLayer.container,
-      this.uiLayer.container
+      this.uiLayer.container,
     );
 
     // create controller once you have the landmarker
     this.tracker = new DetectionController({
       videoEl: this.videoEl,
-      detectEveryMs: 33
+      detectEveryMs: 33,
     });
 
     // --- PIXI Ticker for detection ---
@@ -94,7 +96,15 @@ export class PixiOverlay extends LitElement {
         mirrored: this.mirrored,
         index: 1,
         width: w,
-        height: h
+        height: h,
+      });
+    });
+
+    this.app.renderer.on('resize', () => {
+      detectorStore.resize(this.app.renderer.width, this.app.renderer.height);
+      console.log('Renderer resized:', {
+        width: detectorStore.width,
+        height: detectorStore.height,
       });
     });
 
@@ -103,8 +113,8 @@ export class PixiOverlay extends LitElement {
       new CustomEvent('pixi-ready', {
         detail: { app: this.app, overlayLayer: this.overlayLayer },
         bubbles: true,
-        composed: true
-      })
+        composed: true,
+      }),
     );
   }
 
