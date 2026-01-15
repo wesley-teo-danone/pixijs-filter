@@ -19,7 +19,7 @@ export class DetectionController {
       eye: this.eyeDetector,
       tongue: this.tongueDetector,
       nail: this.nailDetector,
-      lip: this.lipDetector
+      lip: this.lipDetector,
     };
     this._lastDetect = 0;
     this._latest = null;
@@ -34,14 +34,14 @@ export class DetectionController {
     const currentDetector = detectorStore.getSnapshot().currentDetector.id;
     const landmarks = this.detectorMap[currentDetector].predict(
       this.videoEl,
-      nowMs
+      nowMs,
     );
     this._latest = {
       faceLandmarks: landmarks?.faceLandmarks ?? null,
       handLandmarks: landmarks?.handLandmarks ?? null,
       eyeside: landmarks?.eyeside ?? null,
       valid: landmarks?.valid ?? false,
-      timestamp: nowMs
+      timestamp: nowMs,
     };
     return this._latest;
   }

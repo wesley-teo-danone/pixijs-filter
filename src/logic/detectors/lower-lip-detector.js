@@ -16,7 +16,7 @@ class LowerLipDetector extends BaseDetector {
     /* indices outlining lips + chin line */
     const MOUTH_IDX = [
       61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 61, 146, 91, 181, 84, 17,
-      314, 405, 321, 375, 291, 0, 17, 13, 14, 152, 175, 199, 200, 18
+      314, 405, 321, 375, 291, 0, 17, 13, 14, 152, 175, 199, 200, 18,
     ];
 
     const w = this.videoEl.videoWidth;
@@ -50,15 +50,14 @@ class LowerLipDetector extends BaseDetector {
     return [{ x: sx, y: sy, w: side, h: side }];
   }
 
-  predict() {
-    const now = performance.now();
-    const faceResults = this._faceDetectorModel.detectForVideo(
-      this.videoEl,
-      now
-    );
+  predict(videoEl, now) {
+    let valid = false;
+    let faceLandmarks = null;
+    const faceResults = this._faceDetectorModel.detectForVideo(videoEl, now);
     if (faceResults.faceLandmarks?.length) {
       for (const L of faceResults.faceLandmarks) {
         /* 1. scale  */
+        faceLandmarks = L;
         const mouthWidth = Math.hypot(L[61].x - L[291].x, L[61].y - L[291].y);
 
         const upperY = L[13].y;
@@ -73,11 +72,13 @@ class LowerLipDetector extends BaseDetector {
           gapRatio > lipRatioTH ? this.lipPullFrameCount + 1 : 0;
 
         if (this.lipPullFrameCount >= lipHoldMinFrames) {
-          return { faceLandmarks: L };
+          valid = true;
+          console.log('Lower lip pull detected');
+          break;
         }
       }
     }
-    return null;
+    return { faceLandmarks, valid };
   }
 }
 

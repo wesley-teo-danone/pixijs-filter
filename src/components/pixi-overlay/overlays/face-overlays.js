@@ -13,7 +13,7 @@ export class FaceOverlays {
 
   update(
     landmarkSets,
-    { mirrored = false, index = 1, width = 0, height = 0 } = {}
+    { mirrored = false, index = 1, width = 0, height = 0 } = {},
   ) {
     const landmarks = landmarkSets?.faceLandmarks;
     if (!landmarks || !landmarks[index]) {

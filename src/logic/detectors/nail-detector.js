@@ -1,5 +1,3 @@
-import { HandLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304';
-
 import { BaseDetector } from './base-detector.js';
 import { detectionModels } from '../models/detection-models.js';
 
@@ -9,19 +7,19 @@ class NailDetector extends BaseDetector {
     this._handLandmarkerModel = detectionModels.getHandLandmarker();
     this.backFrames = {
       Left: 0,
-      Right: 0
+      Right: 0,
     };
     this.stableFrames = {
       Left: 0,
-      Right: 0
+      Right: 0,
     };
     this.lastCentroid = {
       Left: null,
-      Right: null
+      Right: null,
     };
     this.handReady = {
       Left: false,
-      Right: false
+      Right: false,
     };
     this.backHoldMinFrames = 8; // tweak as you like (≈ ⅓ s at 24 fps)
     this.stableHoldMinFrames = 10; // must stay still ≥ 10 frames
@@ -59,7 +57,7 @@ class NailDetector extends BaseDetector {
     const FINGERS = [
       { tip: 8, joint: 7 }, // index
       { tip: 12, joint: 11 }, // middle
-      { tip: 16, joint: 15 } // ring
+      { tip: 16, joint: 15 }, // ring
     ];
 
     const left = [],

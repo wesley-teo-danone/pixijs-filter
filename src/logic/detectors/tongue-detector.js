@@ -16,7 +16,7 @@ class TongueDetector extends BaseDetector {
     /* indices outlining lips + chin line */
     const MOUTH_IDX = [
       61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 61, 146, 91, 181, 84, 17,
-      314, 405, 321, 375, 291, 0, 17, 13, 14, 152, 175, 199, 200, 18
+      314, 405, 321, 375, 291, 0, 17, 13, 14, 152, 175, 199, 200, 18,
     ];
 
     const w = this.videoEl.videoWidth;

@@ -14,68 +14,6 @@ class LowerEyelidDetector extends BaseDetector {
     this.fingerNearStart = false; // flag to indicate if finger is near the start position
     this.fingerHoldCounter = 0; // counter for finger hold frames
     this.fingerStartDist = 0; // initial distance when finger is near start
-    this.OVERLAY_COLOURS = {
-      idle: {
-        // red
-        fill: 'rgba(255, 59, 48, 0.22)',
-        stroke: '#FF3B30'
-      },
-      near: {
-        // yellow
-        fill: 'rgba(255, 204, 0, 0.22)',
-        stroke: '#FFCC00'
-      },
-      good: {
-        // green
-        fill: 'rgba(48, 209, 88, 0.24)',
-        stroke: '#30D158'
-      }
-    };
-  }
-
-  roundedRectPath(ctx, x, y, w, h, r = 10) {
-    const rr = Math.min(r, w * 0.5, h * 0.5);
-    ctx.beginPath();
-    ctx.moveTo(x + rr, y);
-    ctx.arcTo(x + w, y, x + w, y + h, rr);
-    ctx.arcTo(x + w, y + h, x, y + h, rr);
-    ctx.arcTo(x, y + h, x, y, rr);
-    ctx.arcTo(x, y, x + w, y, rr);
-    ctx.closePath();
-  }
-
-  drawDimmedWithHole(ctx, x, y, w, h, r = 10, dim = 0.2) {
-    ctx.save();
-    ctx.fillStyle = `rgba(0,0,0,${dim})`;
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    // Carve out a hole where the overlay box will be
-    ctx.globalCompositeOperation = 'destination-out';
-    this.roundedRectPath(ctx, x, y, w, h, r);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  drawOverlayBox(ctx, x, y, w, h, state = 'idle') {
-    const { fill, stroke } =
-      this.OVERLAY_COLOURS[state] || this.OVERLAY_COLOURS.idle;
-
-    // Dim BG except the overlay square
-    const corner = Math.min(w, h) * 0.2;
-    this.drawDimmedWithHole(ctx, x, y, w, h, corner, 0.2);
-
-    // Colored glass + soft glow stroke
-    ctx.save();
-    this.roundedRectPath(ctx, x, y, w, h, corner);
-    ctx.fillStyle = fill;
-    ctx.fill();
-
-    ctx.shadowColor = stroke;
-    ctx.shadowBlur = 12;
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = stroke;
-    ctx.stroke();
-    ctx.restore();
   }
 
   eyeBoxFromLandmarks(L, indices, W, H, padPx = 0) {
@@ -136,10 +74,10 @@ class LowerEyelidDetector extends BaseDetector {
     if (!landmarks || !eyeside) return null;
 
     const IDX_RIGHT = [
-      33, 133, 160, 159, 158, 157, 173, 144, 145, 153, 154, 155, 246
+      33, 133, 160, 159, 158, 157, 173, 144, 145, 153, 154, 155, 246,
     ];
     const IDX_LEFT = [
-      263, 362, 387, 386, 385, 384, 398, 373, 374, 380, 381, 382, 466
+      263, 362, 387, 386, 385, 384, 398, 373, 374, 380, 381, 382, 466,
     ];
     const IDX = eyeside === 'left' ? IDX_LEFT : IDX_RIGHT;
 
@@ -173,22 +111,17 @@ class LowerEyelidDetector extends BaseDetector {
     return [{ x: sx, y: sy, w: side, h: side }];
   }
 
-  predict() {
-    const w = this.canvasCtx.canvas.width,
-      h = this.canvasCtx.canvas.height;
-    let ready = null;
-    const now = performance.now();
-    const faceResults = this._faceDetectorModel.detectForVideo(
-      this.videoEl,
-      now
-    );
-    const handResults = this._handDetectorModel.detectForVideo(
-      this.videoEl,
-      now
-    );
+  predict(videoEl, now) {
+    const faceResults = this._faceDetectorModel.detectForVideo(videoEl, now);
+    const handResults = this._handDetectorModel.detectForVideo(videoEl, now);
+    let valid = false;
+    let faceLandmarks = null;
+    let handLandmarks = null;
+
     /*  FACE LOOP  */
     if (faceResults.faceLandmarks?.length) {
       for (const L of faceResults.faceLandmarks) {
+        faceLandmarks = L;
         const eyeSpan = Math.hypot(L[33].x - L[263].x, L[33].y - L[263].y);
 
         // MediaPipe FaceMesh eye polygons
@@ -198,12 +131,13 @@ class LowerEyelidDetector extends BaseDetector {
         // Your arrow/lower-lid reference indices
         const eyes = [
           { lidIdx: 145, arrowIdx: 230, poly: EYE_POLY_RIGHT, side: 'right' }, // right eye
-          { lidIdx: 374, arrowIdx: 450, poly: EYE_POLY_LEFT, side: 'left' } // left eye
+          { lidIdx: 374, arrowIdx: 450, poly: EYE_POLY_LEFT, side: 'left' }, // left eye
         ];
 
         // Find closest fingertip to either eye (index/middle/thumb)
         let best = null;
         if (handResults.landmarks?.length) {
+          handLandmarks = handResults;
           for (const H of handResults.landmarks) {
             const fingerIds = [12, 8, 4];
             for (const fId of fingerIds) {
@@ -220,16 +154,7 @@ class LowerEyelidDetector extends BaseDetector {
           }
         }
 
-        // Defaults
-        let state = 'idle'; // red
-        let fx, fy, ex, ey;
-
         if (best) {
-          fx = best.handPt.x * w;
-          fy = best.handPt.y * h;
-          ex = L[best.eye.arrowIdx].x * w;
-          ey = L[best.eye.arrowIdx].y * h;
-
           if (!this.fingerNearStart) {
             if (best.dist < 0.35) {
               this.fingerHoldCounter++;
@@ -240,10 +165,6 @@ class LowerEyelidDetector extends BaseDetector {
               }
             } else {
               this.fingerHoldCounter = 0;
-              // guidance arrow while idle
-              // if (typeof drawDottedArrow === "function") {
-              //   drawDottedArrow(canvasCtx, fx, fy, ex, ey);
-              // }
             }
           } else {
             if (best.dist > 0.65) {
@@ -251,28 +172,29 @@ class LowerEyelidDetector extends BaseDetector {
               this.fingerNearStart = false;
               this.fingerHoldCounter = 0;
               this.pullFrameCount = 0;
-              // if (typeof drawDottedArrow === "function") {
-              //   drawDottedArrow(canvasCtx, fx, fy, ex, ey);
-              // }
             } else {
               const delta = best.dist - this.fingerStartDist;
               // Calibrate here if needed (you noted 0.040–0.070 earlier)
               this.pullFrameCount = delta > 0.03 ? this.pullFrameCount + 1 : 0;
 
               if (this.pullFrameCount >= pullMinFrames) {
-                state = 'good'; // green
                 this.lastPulledEye = best.eye.lidIdx === 145 ? 'right' : 'left';
-                ready = { landmarks: L, eyeside: this.lastPulledEye };
-              } else {
-                state = 'near'; // yellow
+                valid = true;
+                console.log('Lower eyelid pull detected');
+                break; // exit face loop
               }
             }
           }
         }
-        break;
       }
     }
-    return { faceLandmarks: ready.landmarks, eyeside: ready.eyeside };
+
+    return {
+      faceLandmarks,
+      handLandmarks,
+      valid,
+      eyeside: valid ? this.lastPulledEye : null,
+    };
   }
 }
 

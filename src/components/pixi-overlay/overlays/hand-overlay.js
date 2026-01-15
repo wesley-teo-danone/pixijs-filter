@@ -19,7 +19,7 @@ export class HandOverlay {
   }
 
   update(landmarkSets, { mirrored = false, width = 0, height = 0 } = {}) {
-    const handData = landmarkSets?.handLandmarks ?? landmarkSets ?? null;
+    const handData = landmarkSets?.handLandmarks ?? null;
     const hands = handData?.landmarks ?? [];
     this.handSprites.forEach((sprite, idx) => {
       const hand = hands[idx];

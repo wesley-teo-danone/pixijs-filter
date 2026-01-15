@@ -27,25 +27,28 @@ export class FaceHybridOverlay {
 
   update(
     landmarkSets,
-    { mirrored = false, index = 1, width = 0, height = 0 } = {}
+    { mirrored = false, index = 1, width = 0, height = 0 } = {},
   ) {
-    const face = landmarkSets?.face ?? landmarkSets?.faces?.[0];
-    if (face && face[index]) {
-      const nose = face[index];
-      const xNorm = mirrored ? 1 - nose.x : nose.x;
-      this.faceSprite.visible = true;
-      this.faceSprite.position.set(xNorm * width, nose.y * height);
-    } else {
+    const faceLandmarks = landmarkSets?.faceLandmarks;
+    if (!faceLandmarks || !faceLandmarks[index]) {
       this.faceSprite.visible = false;
+    } else {
+      this.faceSprite.visible = true;
+      const p = faceLandmarks[index];
+      const xNorm = mirrored ? 1 - p.x : p.x;
+      this.faceSprite.position.set(xNorm * width, p.y * height);
     }
 
-    const hands = landmarkSets?.hands ?? [];
+    const handData = landmarkSets?.handLandmarks ?? null;
+    const hands = handData?.landmarks ?? [];
     this.handSprites.forEach((sprite, idx) => {
-      const wrist = hands[idx]?.[0];
+      const hand = hands[idx];
+      const wrist = hand?.[0];
       if (!wrist) {
         sprite.visible = false;
         return;
       }
+
       const xNorm = mirrored ? 1 - wrist.x : wrist.x;
       sprite.visible = true;
       sprite.position.set(xNorm * width, wrist.y * height);
