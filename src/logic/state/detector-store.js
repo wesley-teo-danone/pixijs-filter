@@ -1,26 +1,30 @@
 const DETECTOR_STATES = {
   INCOMPLETE: 'incomplete',
-  ACTIVE: 'active'
+  ACTIVE: 'active',
 };
 
 const DETECTORS = [
   {
     id: 'tongue',
-    label: 'Tongue'
+    label: 'Tongue',
   },
   {
     id: 'nail',
-    label: 'Nails'
+    label: 'Nails',
   },
   {
     id: 'eye',
-    label: 'Lower Eyelid'
-  }
+    label: 'Lower Eyelid',
+  },
 ];
 
 class DetectorStore extends EventTarget {
   constructor() {
     super();
+    this.screen = {
+      width: 0,
+      height: 0,
+    };
     // [id: string]: DetectorMeta
     this.detectors = new Map(DETECTORS.map((det) => [det.id, det]));
     // [id: string]: DETECTOR_STATES
@@ -50,7 +54,7 @@ class DetectorStore extends EventTarget {
       if (prevState === DETECTOR_STATES.ACTIVE) {
         this.detectorStates.set(
           this.currentDetectorId,
-          DETECTOR_STATES.INCOMPLETE
+          DETECTOR_STATES.INCOMPLETE,
         );
       }
     }
@@ -63,8 +67,9 @@ class DetectorStore extends EventTarget {
 
   getSnapshot() {
     return {
-      currentDetector: this.detectors.get(this.currentDetectorId), //DetectorMeta
-      detectorStates: Object.fromEntries(this.detectorStates)
+      currentDetector: this.detectors.get(this.currentDetectorId), // DetectorMeta
+      detectorStates: Object.fromEntries(this.detectorStates),
+      screen: { ...this.screen }, // Include screen dimensions
     };
   }
 
@@ -77,6 +82,11 @@ class DetectorStore extends EventTarget {
 
   #emit() {
     this.dispatchEvent(new Event('change'));
+  }
+  resize(width, height) {
+    this.screen.width = width;
+    this.screen.height = height;
+    this.#emit(); // Notify subscribers about the change
   }
 }
 

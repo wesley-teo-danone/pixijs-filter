@@ -11,7 +11,7 @@ export class HandOverlay {
     this.handSprites = Array.from({ length: 2 }, () => {
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
-      sprite.scale.set(0.045);
+      sprite.scale.set(0.3);
       sprite.visible = false;
       this.container.addChild(sprite);
       return sprite;
